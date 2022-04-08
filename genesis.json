@@ -7,7 +7,7 @@
     "eip158Block": 0,
     "eip160Block": 0,
     "byzantiumBlock": 0,
-    "petersbrugBlock": 0,
+    "petersburgBlock": 0,
     "constantinopleBlock": 0,
     "istanbulBlock": 0,
     "ethash": {}
@@ -15,22 +15,25 @@
   "difficulty": "1",
   "gasLimit": "30000000000",
   "alloc": {
-    "0x6Dc1D97eb231C5609898C837A695e5a620e04851": {
+    "0x995bb369281E49fB62B55270436e56fEBAb3f28a": {
+      "balance": "100000000000000000000000"
+    },
+    "0xe4799f2721784962835B03e5D7e20a874933B782": {
       "balance": "250000000000000000000"
     },
-    "0x132D8680F1E37D0f5001E58bfA2D2923c550C52c": {
+    "0x0Fe86Cf680Be47aDFAFEb2d11a03cBAE4525BC98": {
       "balance": "250000000000000000000"
     },
-    "0x8dFA942E31f94f24D29681B4dF2a9BC0560BB282": {
+    "0x2F7B0eF15FE9696f34727E10b675CB481Bdfc237": {
       "balance": "250000000000000000000"
     },
-    "0x2C5462979C7E862717A461C74e15f8d19Fe0F4D2": {
+    "0x7aF4e44aC3b72D44b643954e4e963f3D1706E332": {
       "balance": "250000000000000000000"
     },
-    "0xcc30dE568301232c2289af6E22d5C523aF5f6B61": {
+    "0x79034FfAe9CC1109C8e9b86D0f7C8a295dc41B58": {
       "balance": "250000000000000000000"
     },
-    "0x707070BA07b19A6C4b511FdcaA70d535ae5608B0": {
+    "0xA17054D1cA99377Cb8c8556Da67685C5269e9D56": {
       "balance": "250000000000000000000"
     }
   }

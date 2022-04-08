@@ -42,9 +42,66 @@ contract RentManagerV1 {
     function authenticate(string memory secret) external view returns (bool) {
         require(users[msg.sender].exists, "You're not registered");
         require(
-            users[msg.sender].secretHash == keccak256(abi.encodePacked(secret))
+            users[msg.sender].secretHash == keccak256(abi.encodePacked(secret)),
+            "Wrong secret"
         );
         return true;
+    }
+
+    constructor() {
+        users[0xe4799f2721784962835B03e5D7e20a874933B782] = User(
+            "admin",
+            keccak256(abi.encodePacked("12345")),
+            Role.ADMIN,
+            true
+        );
+        userLogins["admin"] = 0xe4799f2721784962835B03e5D7e20a874933B782;
+        userLoginsArray.push("admin");
+
+        users[0xe4799f2721784962835B03e5D7e20a874933B782] = User(
+            "danil",
+            keccak256(abi.encodePacked("12345")),
+            Role.ADMIN,
+            true
+        );
+        userLogins["danil"] = 0xe4799f2721784962835B03e5D7e20a874933B782;
+        userLoginsArray.push("danil");
+
+        users[0xe4799f2721784962835B03e5D7e20a874933B782] = User(
+            "nadya",
+            keccak256(abi.encodePacked("12345")),
+            Role.ADMIN,
+            true
+        );
+        userLogins["nadya"] = 0xe4799f2721784962835B03e5D7e20a874933B782;
+        userLoginsArray.push("nadya");
+
+        users[0xe4799f2721784962835B03e5D7e20a874933B782] = User(
+            "vova",
+            keccak256(abi.encodePacked("12345")),
+            Role.ADMIN,
+            true
+        );
+        userLogins["vova"] = 0xe4799f2721784962835B03e5D7e20a874933B782;
+        userLoginsArray.push("vova");
+
+        users[0xe4799f2721784962835B03e5D7e20a874933B782] = User(
+            "albina",
+            keccak256(abi.encodePacked("12345")),
+            Role.USER,
+            true
+        );
+        userLogins["albina"] = 0xe4799f2721784962835B03e5D7e20a874933B782;
+        userLoginsArray.push("albina");
+
+        users[0xe4799f2721784962835B03e5D7e20a874933B782] = User(
+            "maxim",
+            keccak256(abi.encodePacked("12345")),
+            Role.USER,
+            true
+        );
+        userLogins["maxim"] = 0xe4799f2721784962835B03e5D7e20a874933B782;
+        userLoginsArray.push("maxim");
     }
 }
 
@@ -85,6 +142,7 @@ contract RentManagerV2 is RentManagerV1 {
         )
     {
         require(objects[objectId].exists, "Object does not exist");
+
         Object memory object = objects[objectId];
         return (object.owner, object.id, object.totalArea, object.kitchenArea);
     }
@@ -171,6 +229,7 @@ contract RentManagerV3 is RentManagerV2 {
             block.timestamp - rent.creationDate < 30 * 24 * 60 * 60,
             "Rent duration expired"
         );
+
         return (
             rentId,
             rent.objectId,
@@ -212,11 +271,78 @@ contract RentManagerV3 is RentManagerV2 {
         rentOfferIdsByRentId[rentId] = rentOfferIds.length;
     }
 
-    function acceptRentOffer(uint256 rentOfferId) external view {
+    function getRentOfferIds() external view returns (uint256[] memory) {
+        return rentOfferIds;
+    }
+
+    function getRentOffer(uint256 rentOfferId)
+        external
+        view
+        returns (
+            uint256 id,
+            address offerer,
+            uint256 rentId,
+            uint256 creationDate,
+            uint256 value,
+            bool finished
+        )
+    {
+        RentOffer memory rentOffer = rentOffers[rentOfferId];
+        require(rentOffer.exists, "Rent offer does not exist");
+        require(rents[rentOffer.rentId].exists, "Rent does not exist");
+        require(
+            objects[rents[rentOffer.rentId].objectId].owner == msg.sender ||
+                rentOffer.offerer == msg.sender,
+            "Access denied"
+        );
+
+        return (
+            rentOfferId,
+            rentOffer.offerer,
+            rentOffer.rentId,
+            rentOffer.creationDate,
+            rentOffer.value,
+            rentOffer.finished
+        );
+    }
+
+    function acceptRentOffer(uint256 rentOfferId) external {
         RentOffer memory rentOffer = rentOffers[rentOfferId];
         Rent memory rent = rents[rentOffer.rentId];
         require(rentOffer.exists, "Rent offer does not exist");
-        require(rent.renter == msg.sender, "Access denied");
+        require(
+            objects[rents[rentOffer.rentId].objectId].owner == msg.sender,
+            "Access denied"
+        );
+        require(!rentOffer.finished, "Rent offer already finished");
         require(!rent.borrowed, "Rent already borrowed");
+
+        rentOffers[rentOfferId].finished = true;
+        payable(msg.sender).transfer(rentOffer.value);
+        rents[rentOffer.rentId].borrowed = true;
+        rents[rentOffer.rentId].lastPaymentDate = block.timestamp;
+        rents[rentOffer.rentId].renter = rentOffer.offerer;
+    }
+
+    function denyRentOffer(uint256 rentOfferId) external {
+        RentOffer memory rentOffer = rentOffers[rentOfferId];
+        Rent memory rent = rents[rentOffer.rentId];
+        Object memory object = objects[rent.objectId];
+        require(rentOffer.exists, "Rent offer does not exist");
+        require(object.owner == msg.sender, "Access denied");
+        require(!rentOffer.finished, "Rent offer already finished");
+
+        rentOffers[rentOfferId].finished = true;
+        payable(rentOffer.offerer).transfer(rentOffer.value);
+    }
+
+    function cancelRentOffer(uint256 rentOfferId) external {
+        RentOffer memory rentOffer = rentOffers[rentOfferId];
+        require(rentOffer.exists, "Rent offer does not exist");
+        require(!rentOffer.finished, "Rent offer is already finished");
+        require(rentOffer.offerer == msg.sender, "Access denied");
+
+        rentOffers[rentOfferId].finished = true;
+        payable(msg.sender).transfer(rentOffer.value);
     }
 }
